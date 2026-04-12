@@ -14,7 +14,7 @@
 
     Review có sự cân bằng giữa khen và chê (Ví dụ: "Đồ ăn ngon nhưng nhân viên rất tệ").
 
-    Review tiếng nước ngoài = 3: gán nhãn 3 cho những Review không có nội dung chính là Tiếng Việt
+    Review tiếng nước ngoài (Foreign) = 3: gán nhãn 3 cho những Review không có nội dung chính là Tiếng Việt
 
     CHỈ THỊ ĐẶC BIỆT ĐỂ TRÁNH THIÊN KIẾN TÍCH CỰC:
 
