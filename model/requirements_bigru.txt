@@ -1,0 +1,8 @@
+tensorflow
+huggingface_hub
+pandas
+numpy
+pyvi
+scikit-learn
+matplotlib
+seaborn
