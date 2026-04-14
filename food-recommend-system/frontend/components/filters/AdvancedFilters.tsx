@@ -10,6 +10,24 @@ type Props = {
   onChange: (next: AdvancedFilterState) => void;
 };
 
+const GROUP_LABELS: Record<string, string> = {
+  phu_hop_cho_nguoi_khuyet_tat: "Phù hợp cho người khuyết tật",
+  cac_tuy_chon_dich_vu: "Các tùy chọn dịch vụ",
+  diem_noi_bat: "Điểm nổi bật",
+  noi_tieng_ve: "Nổi tiếng về",
+  dich_vu: "Dịch vụ",
+  lua_chon_an_uong: "Lựa chọn ăn uống",
+  tien_nghi: "Tiện nghi",
+  bau_khong_khi: "Bầu không khí",
+  khach_hang: "Khách hàng",
+  len_ke_hoach: "Lên kế hoạch",
+  thanh_toan: "Thanh toán",
+  tre_em: "Trẻ em",
+  bai_do_xe: "Bãi đỗ xe",
+  tu_doanh_nghiep: "Tự doanh nghiệp",
+  thu_cung: "Thú cưng",
+};
+
 export default function AdvancedFilters({ values, onChange }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -45,7 +63,7 @@ export default function AdvancedFilters({ values, onChange }: Props) {
           {Object.entries(ADVANCED_FILTERS).map(([group, items]) => (
             <div key={group} className="rounded-xl border border-gray-200 p-4">
               <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">
-                {group.replaceAll("_", " ")}
+                {GROUP_LABELS[group] || group}
               </h3>
 
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">

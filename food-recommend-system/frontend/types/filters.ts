@@ -2,7 +2,7 @@ export interface BasicFilterState {
   restaurantType: string;
   minPrice: string;
   maxPrice: string;
-  time: string;
+  arrivalDateTime: string;
   lgbtFriendly: boolean;
 }
 

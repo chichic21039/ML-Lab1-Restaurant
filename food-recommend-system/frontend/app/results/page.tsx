@@ -1,8 +1,8 @@
 import RestaurantCard from "@/components/restaurant/RestaurantCard";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { getRestaurants } from "@/lib/api";
-import { filterRestaurants, formatCurrency } from "@/lib/utils";
-import { BasicFilterState } from "@/types/filters";
+import { rankRestaurantsByMatching } from "@/lib/utils";
+import { AdvancedFilterState, BasicFilterState } from "@/types/filters";
 import Link from "next/link";
 
 type Props = {
@@ -10,8 +10,9 @@ type Props = {
     type?: string;
     minPrice?: string;
     maxPrice?: string;
-    time?: string;
+    arrivalDateTime?: string;
     lgbt?: string;
+    advanced?: string;
   }>;
 };
 
@@ -23,33 +24,24 @@ export default async function ResultsPage({ searchParams }: Props) {
     restaurantType: params.type ?? "",
     minPrice: params.minPrice ?? "",
     maxPrice: params.maxPrice ?? "",
-    time: params.time ?? "",
+    arrivalDateTime: params.arrivalDateTime ?? "",
     lgbtFriendly: params.lgbt === "true",
   };
 
-  const filteredRestaurants = filterRestaurants(restaurants, filters);
-
-  const activeBadges: string[] = [];
-
-  if (filters.restaurantType) {
-    activeBadges.push(filters.restaurantType);
+  let advancedFilters: AdvancedFilterState = {};
+  if (params.advanced) {
+    try {
+      advancedFilters = JSON.parse(params.advanced);
+    } catch {
+      advancedFilters = {};
+    }
   }
 
-  if (filters.minPrice) {
-    activeBadges.push(`Từ ${formatCurrency(Number(filters.minPrice))}`);
-  }
-
-  if (filters.maxPrice) {
-    activeBadges.push(`Đến ${formatCurrency(Number(filters.maxPrice))}`);
-  }
-
-  if (filters.time) {
-    activeBadges.push(`Giờ đến: ${filters.time}`);
-  }
-
-  if (filters.lgbtFriendly) {
-    activeBadges.push("LGBTQ+ friendly");
-  }
+  const rankedRestaurants = rankRestaurantsByMatching(
+    restaurants,
+    filters,
+    advancedFilters
+  );
 
   return (
     <main className="container-page space-y-6 py-8">
@@ -57,7 +49,7 @@ export default async function ResultsPage({ searchParams }: Props) {
         <div>
           <SectionTitle
             title="Kết quả tìm kiếm"
-            subtitle={`Tìm thấy ${filteredRestaurants.length} quán ăn phù hợp.`}
+            subtitle={`Tìm thấy ${rankedRestaurants.length} quán đáp ứng tiêu chí.`}
           />
         </div>
 
@@ -69,47 +61,22 @@ export default async function ResultsPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      {activeBadges.length > 0 ? (
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-semibold text-gray-700">
-            Bộ lọc đang áp dụng
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {activeBadges.map((badge) => (
-              <span
-                key={badge}
-                className="rounded-full bg-amber-50 px-3 py-1 text-sm text-amber-800"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {filteredRestaurants.length === 0 ? (
+      {rankedRestaurants.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center shadow-sm">
           <h3 className="text-xl font-bold text-gray-800">
             Không tìm thấy quán phù hợp
           </h3>
           <p className="mt-2 text-sm text-gray-500">
-            Hãy thử bỏ bớt một vài điều kiện lọc hoặc quay lại trang chủ để chọn
-            lại.
+            Hãy thử nới rộng tiêu chí cứng hoặc bỏ bớt bộ lọc.
           </p>
-
-          <div className="mt-5">
-            <Link
-              href="/"
-              className="inline-flex rounded-xl bg-amber-700 px-5 py-3 font-semibold text-white transition hover:bg-amber-800"
-            >
-              Quay lại trang chủ
-            </Link>
-          </div>
         </section>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          {rankedRestaurants.map((restaurant) => (
+            <RestaurantCard
+              key={restaurant.restaurant_id}
+              restaurant={restaurant}
+            />
           ))}
         </div>
       )}

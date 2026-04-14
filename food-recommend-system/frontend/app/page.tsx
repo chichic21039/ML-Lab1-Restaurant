@@ -1,75 +1,10 @@
-// import Image from "next/image";
-
-// export default function Home() {
-//   return (
-//     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-//       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-//         <Image
-//           className="dark:invert"
-//           src="/next.svg"
-//           alt="Next.js logo"
-//           width={100}
-//           height={20}
-//           priority
-//         />
-//         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-//           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-//             To get started, edit the page.tsx file.
-//           </h1>
-//           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-//             Looking for a starting point or more instructions? Head over to{" "}
-//             <a
-//               href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//               className="font-medium text-zinc-950 dark:text-zinc-50"
-//             >
-//               Templates
-//             </a>{" "}
-//             or the{" "}
-//             <a
-//               href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//               className="font-medium text-zinc-950 dark:text-zinc-50"
-//             >
-//               Learning
-//             </a>{" "}
-//             center.
-//           </p>
-//         </div>
-//         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-//           <a
-//             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-//             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             <Image
-//               className="dark:invert"
-//               src="/vercel.svg"
-//               alt="Vercel logomark"
-//               width={16}
-//               height={16}
-//             />
-//             Deploy Now
-//           </a>
-//           <a
-//             className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-//             href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             Documentation
-//           </a>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
 "use client";
 
 import AdvancedFilters from "@/components/filters/AdvancedFilters";
 import BasicFilters from "@/components/filters/BasicFilters";
 import SectionTitle from "@/components/ui/SectionTitle";
 import { MOCK_RESTAURANTS } from "@/lib/mock-data";
-import { filterRestaurants } from "@/lib/utils";
+import { rankRestaurantsByMatching } from "@/lib/utils";
 import { AdvancedFilterState, BasicFilterState } from "@/types/filters";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -78,10 +13,17 @@ const initialBasicFilters: BasicFilterState = {
   restaurantType: "",
   minPrice: "",
   maxPrice: "",
-  time: "",
+  arrivalDateTime: "",
   lgbtFriendly: false,
 };
 
+function getArrivalBounds() {
+  const now = new Date();
+  const minDate = new Date(now.getTime() + 15 * 60 * 1000);
+  const maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  return { minDate, maxDate };
+}
 export default function HomePage() {
   const router = useRouter();
 
@@ -92,17 +34,42 @@ export default function HomePage() {
   );
 
   const previewResults = useMemo(() => {
-    return filterRestaurants(MOCK_RESTAURANTS, basicFilters);
-  }, [basicFilters]);
+    return rankRestaurantsByMatching(MOCK_RESTAURANTS, basicFilters, advancedFilters);
+  }, [basicFilters, advancedFilters]);
 
   const selectedAdvancedCount = Object.values(advancedFilters).reduce(
     (sum, arr) => sum + arr.length,
     0
   );
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
+  const min = basicFilters.minPrice ? Number(basicFilters.minPrice) : null;
+  const max = basicFilters.maxPrice ? Number(basicFilters.maxPrice) : null;
+  const invalidPriceRange =
+    min !== null && max !== null && !Number.isNaN(min) && !Number.isNaN(max) && max < min;
 
+  const handleSearch = () => {
+    if (invalidPriceRange) {
+      alert("Giá tối đa không được nhỏ hơn giá tối thiểu.");
+      return;
+    }
+
+    if (basicFilters.arrivalDateTime) {
+      const selected = new Date(basicFilters.arrivalDateTime);
+      const { minDate, maxDate } = getArrivalBounds();
+
+      if (selected < minDate) {
+        alert("Thời điểm đến phải từ 15 phút sau hiện tại trở đi.");
+        return;
+      }
+
+      if (selected > maxDate) {
+        alert("Thời điểm đến chỉ được trong vòng 7 ngày tới.");
+        return;
+      }
+    }
+
+    const params = new URLSearchParams();
+    
     if (basicFilters.restaurantType) {
       params.set("type", basicFilters.restaurantType);
     }
@@ -115,12 +82,16 @@ export default function HomePage() {
       params.set("maxPrice", basicFilters.maxPrice);
     }
 
-    if (basicFilters.time) {
-      params.set("time", basicFilters.time);
+    if (basicFilters.arrivalDateTime) {
+      params.set("arrivalDateTime", basicFilters.arrivalDateTime);
     }
 
     if (basicFilters.lgbtFriendly) {
       params.set("lgbt", "true");
+    }
+
+    if (selectedAdvancedCount > 0) {
+      params.set("advanced", JSON.stringify(advancedFilters));
     }
 
     router.push(`/results?${params.toString()}`);
@@ -142,15 +113,15 @@ export default function HomePage() {
           của bạn
         </h1>
         <p className="mt-4 max-w-2xl text-gray-600">
-          Giao diện ưu tiên trải nghiệm lọc nhiều tiêu chí, hiển thị rõ ràng,
-          sạch sẽ và dễ mở rộng để tích hợp model phân tích review sau này.
+          Các tiêu chí chính được lọc cứng, còn tiêu chí thêm dùng để xếp hạng
+          quán phù hợp nhất.
         </p>
       </section>
 
       <section className="space-y-4">
         <SectionTitle
           title="Bộ lọc cơ bản"
-          subtitle="Chọn nhanh loại quán, mức giá, thời gian và tiêu chí LGBTQ+ friendly."
+          subtitle="Các tiêu chí ở đây là tiêu chí cứng nếu bạn có nhập/chọn."
         />
         <BasicFilters filters={basicFilters} onChange={setBasicFilters} />
       </section>
@@ -158,7 +129,7 @@ export default function HomePage() {
       <section className="space-y-4">
         <SectionTitle
           title="Bộ lọc nâng cao"
-          subtitle={`Đã chọn ${selectedAdvancedCount} tiêu chí nâng cao.`}
+          subtitle={`Đã chọn ${selectedAdvancedCount} tiêu chí thêm.`}
         />
         <AdvancedFilters values={advancedFilters} onChange={setAdvancedFilters} />
       </section>
@@ -168,8 +139,13 @@ export default function HomePage() {
           <div>
             <h3 className="text-xl font-bold text-gray-800">Kết quả xem trước</h3>
             <p className="text-sm text-gray-500">
-              Hiện có {previewResults.length} quán phù hợp với bộ lọc cơ bản.
+              Hiện có {previewResults.length} quán phù hợp nhất.
             </p>
+            {invalidPriceRange ? (
+              <p className="mt-2 text-sm text-red-500">
+                Giá tối đa không được nhỏ hơn giá tối thiểu.
+              </p>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap gap-3">
