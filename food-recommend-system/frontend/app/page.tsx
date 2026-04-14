@@ -3,7 +3,7 @@
 import AdvancedFilters from "@/components/filters/AdvancedFilters";
 import BasicFilters from "@/components/filters/BasicFilters";
 import SectionTitle from "@/components/ui/SectionTitle";
-import { MOCK_RESTAURANTS } from "@/lib/mock-data";
+//import { MOCK_RESTAURANTS } from "@/lib/mock-data";
 import { rankRestaurantsByMatching } from "@/lib/utils";
 import { AdvancedFilterState, BasicFilterState } from "@/types/filters";
 import { useMemo, useState } from "react";
@@ -33,9 +33,9 @@ export default function HomePage() {
     {}
   );
 
-  const previewResults = useMemo(() => {
-    return rankRestaurantsByMatching(MOCK_RESTAURANTS, basicFilters, advancedFilters);
-  }, [basicFilters, advancedFilters]);
+  // const previewResults = useMemo(() => {
+  //   return rankRestaurantsByMatching(MOCK_RESTAURANTS, basicFilters, advancedFilters);
+  // }, [basicFilters, advancedFilters]);
 
   const selectedAdvancedCount = Object.values(advancedFilters).reduce(
     (sum, arr) => sum + arr.length,
@@ -69,7 +69,7 @@ export default function HomePage() {
     }
 
     const params = new URLSearchParams();
-    
+
     if (basicFilters.restaurantType) {
       params.set("type", basicFilters.restaurantType);
     }
@@ -138,9 +138,9 @@ export default function HomePage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-bold text-gray-800">Kết quả xem trước</h3>
-            <p className="text-sm text-gray-500">
-              Hiện có {previewResults.length} quán phù hợp nhất.
-            </p>
+            {/* <p className="text-sm text-gray-500">
+              Hiện có 0 quán phù hợp nhất.
+            </p> */}
             {invalidPriceRange ? (
               <p className="mt-2 text-sm text-red-500">
                 Giá tối đa không được nhỏ hơn giá tối thiểu.

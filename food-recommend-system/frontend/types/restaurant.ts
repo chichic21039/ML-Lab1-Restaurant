@@ -39,3 +39,22 @@ export interface Restaurant {
   price_level?: string;
   reviews?: ReviewItem[];
 }
+
+export type SentimentLabel = "Tốt" | "Trung bình" | "Dở";
+
+export interface SentimentPieItem {
+  name: SentimentLabel;
+  value: number;
+}
+
+export interface PeakHourItem {
+  hour: string;
+  value: number;
+}
+
+export interface SentimentTimelineItem {
+  period: string;
+  tot: number;
+  trungBinh: number;
+  do: number;
+}
