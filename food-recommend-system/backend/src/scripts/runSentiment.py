@@ -19,26 +19,25 @@ MODEL_NAME = "pqthinh232/HCMUS-phobert-vietnamese-restaurant-sentiment-analysis"
 # Model Hugging Face thường trả label kiểu LABEL_0, LABEL_1, LABEL_2
 # Ta map trực tiếp về số nguyên.
 LABEL_MAP = {
-    "LABEL_0": 0,
+    "LABEL_0": 2,
     "LABEL_1": 1,
-    "LABEL_2": 2,
+    "LABEL_2": 0,
 
-    "NEUTRAL": 0,
+    "NEUTRAL": 2,
     "POSITIVE": 1,
-    "NEGATIVE": 2,
+    "NEGATIVE": 0,
 
-    "Neutral": 0,
+    "Neutral": 2,
     "Positive": 1,
-    "Negative": 2,
+    "Negative": 0,
 
-    0: 0,
+    0: 2,
     1: 1,
-    2: 2,
-    "0": 0,
+    2: 0,
+    "0": 2,
     "1": 1,
-    "2": 2,
+    "2": 0,
 }
-
 def normalize_label(output_label):
     text = str(output_label).strip()
 

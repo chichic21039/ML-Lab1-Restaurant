@@ -5,6 +5,12 @@ import SentimentPieChart from "./SentimentPieChart";
 type Props = {
   restaurant: Restaurant;
 };
+function getSentimentLabel(sentiment: number | null | undefined) {
+  if (sentiment === 1) return "Tốt";
+  if (sentiment === 2) return "Trung bình";
+  if (sentiment === 0) return "Dở";
+  return "Không rõ";
+}
 
 function formatPriceRange(restaurant: Restaurant) {
   const min = restaurant.price_min;
@@ -40,8 +46,8 @@ function buildSentimentSummary(reviews: any[] = []) {
 
   for (const review of reviews) {
     if (review.sentiment === 1) good++;
-    else if (review.sentiment === 0) neutral++;
-    else if (review.sentiment === 2) bad++;
+    else if (review.sentiment === 2) neutral++;
+    else if (review.sentiment === 0) bad++;
   }
 
   return [
@@ -50,6 +56,7 @@ function buildSentimentSummary(reviews: any[] = []) {
     { name: "Dở" as const, value: bad },
   ];
 }
+
 
 const ABOUT_LABELS: Record<string, string> = {
   phu_hop_cho_nguoi_khuyet_tat: "Phù hợp cho người khuyết tật",
@@ -220,7 +227,7 @@ export default function RestaurantDetail({ restaurant }: Props) {
                     <span>Không khí: {review.atmosphere_rating}</span>
                   ) : null}
                   {review.sentiment != null ? (
-                    <span>Sentiment: {review.sentiment}</span>
+                    <span>Sentiment: {getSentimentLabel(review.sentiment)}</span>
                   ) : null}
                 </div>
               </div>
