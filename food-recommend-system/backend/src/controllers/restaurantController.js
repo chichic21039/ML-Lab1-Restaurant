@@ -58,3 +58,54 @@ module.exports = {
   getRestaurantById,
   getReviewsByRestaurantId,
 };
+
+
+//line chart Thiện làm
+
+// Hàm bổ trợ để parse chuỗi "X tháng trước" thành index tháng
+const parseReviewTime = (timeStr) => {
+  if (!timeStr) return 0;
+  const match = timeStr.match(/\d+/);
+  if (!match) return 0; // "vừa xong", "1 tuần trước" -> tháng hiện tại (cách 0 tháng)
+  return parseInt(match[0]);
+};
+
+exports.getRestaurantById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Giả sử bạn dùng Model Restaurant của Mongoose
+    const restaurant = await Restaurant.findById(id); 
+    
+    if (!restaurant) return res.status(404).json({ message: "Không tìm thấy" });
+
+    // --- LOGIC TẠO DATA BIỂU ĐỒ ---
+    const trendData = [];
+    const now = new Date();
+    
+    // 1. Khởi tạo mảng 6 tháng (từ 5 tháng trước đến tháng hiện tại)
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = `T${d.getMonth() + 1}`;
+      trendData.push({ month: monthLabel, count: 0, offset: i });
+    }
+
+    // 2. Đếm review dựa vào trường "time"
+    restaurant.reviews.forEach(rev => {
+      const monthsAgo = parseReviewTime(rev.time);
+      if (monthsAgo <= 5) {
+        // Tìm tháng tương ứng trong mảng trendData
+        const target = trendData.find(item => item.offset === monthsAgo);
+        if (target) target.count++;
+      }
+    });
+
+    // Trả về dữ liệu nhà hàng kèm theo trendData đã xử lý
+    res.json({
+      ...restaurant._doc,
+      reviewTrend: trendData.map(({month, count}) => ({month, count})) 
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
