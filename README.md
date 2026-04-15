@@ -1,7 +1,3 @@
-Here is the complete **README.md** file in English, structured logically and professionally based on your report and folder structure.
-
----
-
 # Lab 01: Machine Learning Applications for Promoting Vietnam Tourism
 ## Project: Restaurant Sentiment Analysis & Recommendation System in District 5, HCMC
 
