@@ -13,7 +13,7 @@ This project aims to enhance the tourism experience in District 5, Ho Chi Minh C
 
 ---
 
-## 1. Team Introduction (Group 1)
+## 1. Team Introduction (Group 2)
 
 **Course:** Introduction to Machine Learning (Nhập môn Học máy)  
 **University:** Ho Chi Minh City University of Science (VNU-HCMUS)  
