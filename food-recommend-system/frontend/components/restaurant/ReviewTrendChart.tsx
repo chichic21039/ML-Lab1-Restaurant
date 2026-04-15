@@ -5,29 +5,32 @@ type Props = {
   data: any[];
 };
 
-export default function ReviewTrendChart({ data }: Props) {
+export default function ReviewTrendChart({ data }: { data: any[] }) {
   return (
-    <div className="h-[400px] w-full"> {/* Tăng chiều cao một chút để dễ nhìn 3 đường */}
+    <div className="h-[350px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} allowDecimals={false} />
-          <Tooltip contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
-          <Legend verticalAlign="top" height={36}/>
+          <XAxis 
+            dataKey="month" 
+            axisLine={false} 
+            tickLine={false} 
+            interval={data.length > 10 ? 1 : 0} // Nếu quá nhiều tháng thì ẩn bớt label cho đỡ rối
+            tick={{fontSize: 11}}
+          />
+          <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+          <Tooltip />
+          <Legend verticalAlign="top" height={36} />
           
-          {/* Đường Tích cực - Màu xanh lá */}
           <Area
             type="monotone"
             dataKey="positive"
-            stackId="1" // Xếp chồng lên nhau hoặc bỏ stackId nếu muốn các đường cắt nhau
+            stackId="1" // Dùng stackId để thấy tổng lượng review tăng giảm
             stroke="#16a34a"
             fill="#16a34a"
             fillOpacity={0.2}
             name="Tích cực"
           />
-
-          {/* Đường Trung bình - Màu vàng/cam */}
           <Area
             type="monotone"
             dataKey="neutral"
@@ -37,8 +40,6 @@ export default function ReviewTrendChart({ data }: Props) {
             fillOpacity={0.2}
             name="Bình thường"
           />
-
-          {/* Đường Tiêu cực - Màu đỏ */}
           <Area
             type="monotone"
             dataKey="negative"

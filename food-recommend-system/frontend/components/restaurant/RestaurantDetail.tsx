@@ -62,23 +62,21 @@ function buildSentimentSummary(reviews: any[] = []) {
 
 //line chart của Thiện
 function buildReviewTrend(reviews: any[] = []) {
+  if (reviews.length === 0) return [];
+
+  // 1. Tìm ngày xa nhất để biết biểu đồ cần dài bao nhiêu tháng
+  const maxDays = Math.max(...reviews.map(r => r.days_ago || 0));
+  // Quy đổi ra số tháng (ít nhất là 6 tháng cho đẹp, hoặc nhiều hơn nếu có review cũ hơn)
+  const numMonths = Math.max(6, Math.ceil(maxDays / 30));
+
   const now = new Date();
-  
-  interface InternalTrendItem {
-    month: string;
-    positive: number;   // Đổi tên để dễ dùng trong biểu đồ
-    neutral: number;
-    negative: number;
-    monthsAgo: number;
-  }
+  const trend: any[] = [];
 
-  const trend: InternalTrendItem[] = [];
-
-  // Khởi tạo 6 tháng với tất cả các chỉ số bằng 0
-  for (let i = 5; i >= 0; i--) {
+  // 2. Tạo khung danh sách tháng dựa trên numMonths
+  for (let i = numMonths - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     trend.push({
-      month: `T${d.getMonth() + 1}`,
+      month: `T${d.getMonth() + 1}/${d.getFullYear().toString().slice(-2)}`, // Hiện thêm năm cho rõ
       positive: 0,
       neutral: 0,
       negative: 0,
@@ -86,19 +84,18 @@ function buildReviewTrend(reviews: any[] = []) {
     });
   }
 
+  // 3. Đổ dữ liệu vào hộp dựa trên số ngày (days_ago)
   reviews.forEach((r) => {
-    const timeStr = r.time || "";
-    let monthsAgo = 0;
-    const match = timeStr.match(/(\d+)\s+tháng/);
-    if (match) monthsAgo = parseInt(match[1]);
+    const days = Number(r.days_ago || 0);
+    const monthsAgo = Math.floor(days / 30); // Cứ 30 ngày tính là 1 tháng trước
 
-    if (monthsAgo <= 5) {
+    if (monthsAgo < numMonths) {
       const target = trend.find((t) => t.monthsAgo === monthsAgo);
       if (target) {
-        // Dựa vào trường sentiment trong DB của bạn
-        if (r.sentiment === 1) target.positive++;
-        else if (r.sentiment === 2) target.neutral++;
-        else if (r.sentiment === 0) target.negative++;
+        const s = Number(r.sentiment);
+        if (s === 1) target.positive++;
+        else if (s === 2) target.neutral++;
+        else if (s === 0) target.negative++;
       }
     }
   });
@@ -213,7 +210,12 @@ export default function RestaurantDetail({ restaurant }: Props) {
         <SentimentPieChart data={sentimentSummary} />
       </section>
       
-    
+            {/* Chèn vào giữa hai section này */}
+      <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-2xl font-bold text-gray-800">Xu hướng đánh giá</h2>
+        <ReviewTrendChart data={trendSummary} />
+      </section>
+      
 
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
