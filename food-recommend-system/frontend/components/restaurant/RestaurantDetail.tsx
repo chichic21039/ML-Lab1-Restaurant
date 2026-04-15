@@ -6,9 +6,9 @@ type Props = {
   restaurant: Restaurant;
 };
 function getSentimentLabel(sentiment: number | null | undefined) {
-  if (sentiment === 1) return "Tốt";
-  if (sentiment === 2) return "Trung bình";
-  if (sentiment === 0) return "Dở";
+  if (sentiment === 1) return "Tích cực";
+  if (sentiment === 2) return "Bình thường";
+  if (sentiment === 0) return "Tiêu cực";
   return "Không rõ";
 }
 
@@ -51,9 +51,9 @@ function buildSentimentSummary(reviews: any[] = []) {
   }
 
   return [
-    { name: "Tốt" as const, value: good },
-    { name: "Trung bình" as const, value: neutral },
-    { name: "Dở" as const, value: bad },
+    { name: "Tích cực" as const, value: good },
+    { name: "Bình thường" as const, value: neutral },
+    { name: "Tiêu cực" as const, value: bad },
   ];
 }
 
