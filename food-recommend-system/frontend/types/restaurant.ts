@@ -40,7 +40,7 @@ export interface Restaurant {
   reviews?: ReviewItem[];
 }
 
-export type SentimentLabel = "Tốt" | "Trung bình" | "Dở";
+export type SentimentLabel = "Tích cực" | "Bình thường" | "Tiêu cực";
 
 export interface SentimentPieItem {
   name: SentimentLabel;
