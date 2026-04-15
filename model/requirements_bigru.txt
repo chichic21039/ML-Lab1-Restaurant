@@ -1,8 +1,9 @@
-tensorflow
-huggingface_hub
-pandas
-numpy
+datasets
 pyvi
 scikit-learn
+pandas
+numpy
+huggingface_hub
+joblib
 matplotlib
 seaborn
