@@ -65,44 +65,56 @@ module.exports = {
 // Hàm bổ trợ để parse chuỗi "X tháng trước" thành index tháng
 const parseReviewTime = (timeStr) => {
   if (!timeStr) return 0;
-  const match = timeStr.match(/\d+/);
-  if (!match) return 0; // "vừa xong", "1 tuần trước" -> tháng hiện tại (cách 0 tháng)
-  return parseInt(match[0]);
+  const str = timeStr.toLowerCase();
+  const match = str.match(/\d+/);
+  const value = match ? parseInt(match[0]) : 0;
+
+  if (str.includes("năm")) return 12; // Nếu là năm thì cho đi chỗ khác (ngoài 6 tháng)
+  if (str.includes("tháng")) return value; // Đúng là chữ tháng thì lấy số tháng
+  
+  // Nếu là "tuần", "ngày", "giờ", "vừa xong" -> Trả về 0 (nghĩa là tháng hiện tại)
+  return 0; 
 };
 
 exports.getRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
-    // Giả sử bạn dùng Model Restaurant của Mongoose
-    const restaurant = await Restaurant.findById(id); 
-    
-    if (!restaurant) return res.status(404).json({ message: "Không tìm thấy" });
+    const restaurant = await Restaurant.findById(id); // Giả sử model là Restaurant
 
-    // --- LOGIC TẠO DATA BIỂU ĐỒ ---
-    const trendData = [];
     const now = new Date();
-    
-    // 1. Khởi tạo mảng 6 tháng (từ 5 tháng trước đến tháng hiện tại)
+    const reviewTrend = [];
+
+    // Tạo khung 6 tháng
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthLabel = `T${d.getMonth() + 1}`;
-      trendData.push({ month: monthLabel, count: 0, offset: i });
+      reviewTrend.push({
+        month: `T${d.getMonth() + 1}`,
+        positive: 0,
+        neutral: 0,
+        negative: 0,
+        monthsAgo: i
+      });
     }
 
-    // 2. Đếm review dựa vào trường "time"
+    // Duyệt qua từng review và dùng hàm parseReviewTime
     restaurant.reviews.forEach(rev => {
-      const monthsAgo = parseReviewTime(rev.time);
-      if (monthsAgo <= 5) {
-        // Tìm tháng tương ứng trong mảng trendData
-        const target = trendData.find(item => item.offset === monthsAgo);
-        if (target) target.count++;
+      const monthsAgo = parseReviewTime(rev.time); // XÀI HÀM Ở ĐÂY
+      
+      if (monthsAgo >= 0 && monthsAgo <= 5) {
+        const target = reviewTrend.find(t => t.monthsAgo === monthsAgo);
+        if (target) {
+          if (rev.sentiment === 1) target.positive++;
+          else if (rev.sentiment === 2) target.neutral++;
+          else if (rev.sentiment === 0) target.negative++;
+        }
       }
     });
 
-    // Trả về dữ liệu nhà hàng kèm theo trendData đã xử lý
+    // Trả dữ liệu về cho Frontend
     res.json({
       ...restaurant._doc,
-      reviewTrend: trendData.map(({month, count}) => ({month, count})) 
+      reviewTrend: reviewTrend.map(({month, positive, neutral, negative}) => 
+        ({month, positive, neutral, negative}))
     });
 
   } catch (error) {

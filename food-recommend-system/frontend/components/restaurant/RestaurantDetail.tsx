@@ -1,6 +1,9 @@
 import { Restaurant } from "@/types/restaurant";
 import PeakHoursChart from "./PeakHoursChart";
 import SentimentPieChart from "./SentimentPieChart";
+//Thien test
+import ReviewTrendChart from "./ReviewTrendChart"; // Thêm dòng này
+
 
 type Props = {
   restaurant: Restaurant;
@@ -57,6 +60,52 @@ function buildSentimentSummary(reviews: any[] = []) {
   ];
 }
 
+//line chart của Thiện
+function buildReviewTrend(reviews: any[] = []) {
+  const now = new Date();
+  
+  interface InternalTrendItem {
+    month: string;
+    positive: number;   // Đổi tên để dễ dùng trong biểu đồ
+    neutral: number;
+    negative: number;
+    monthsAgo: number;
+  }
+
+  const trend: InternalTrendItem[] = [];
+
+  // Khởi tạo 6 tháng với tất cả các chỉ số bằng 0
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    trend.push({
+      month: `T${d.getMonth() + 1}`,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+      monthsAgo: i,
+    });
+  }
+
+  reviews.forEach((r) => {
+    const timeStr = r.time || "";
+    let monthsAgo = 0;
+    const match = timeStr.match(/(\d+)\s+tháng/);
+    if (match) monthsAgo = parseInt(match[1]);
+
+    if (monthsAgo <= 5) {
+      const target = trend.find((t) => t.monthsAgo === monthsAgo);
+      if (target) {
+        // Dựa vào trường sentiment trong DB của bạn
+        if (r.sentiment === 1) target.positive++;
+        else if (r.sentiment === 2) target.neutral++;
+        else if (r.sentiment === 0) target.negative++;
+      }
+    }
+  });
+
+  return trend;
+}
+
 
 const ABOUT_LABELS: Record<string, string> = {
   phu_hop_cho_nguoi_khuyet_tat: "Phù hợp cho người khuyết tật",
@@ -84,6 +133,7 @@ export default function RestaurantDetail({ restaurant }: Props) {
 
   const reviews = restaurant.reviews || [];
   const sentimentSummary = buildSentimentSummary(reviews);
+  const trendSummary = buildReviewTrend(reviews); // Thêm dòng này (THiện)
   const about = restaurant.about_clean || {};
   const openingHours = restaurant.opening_hours || {};
   const popularParsed = restaurant.popular_parsed || {};
@@ -162,6 +212,9 @@ export default function RestaurantDetail({ restaurant }: Props) {
         <PeakHoursChart dataByDay={popularParsed} />
         <SentimentPieChart data={sentimentSummary} />
       </section>
+      
+    
+
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-2xl font-bold text-gray-800">Thông tin thêm</h2>
