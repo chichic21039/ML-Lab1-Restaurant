@@ -1,6 +1,3 @@
-This is the updated **README.md** in English. I have added a dedicated section for **Large Files** and updated the **Project Structure** to clearly state that the `dataset/` and `food-recommend-sys/` folders must be downloaded via the Google Drive link provided.
-
----
 
 # Lab 01: Machine Learning Applications for Promoting Vietnam Tourism
 ## Project: Restaurant Sentiment Analysis & Recommendation System in District 5, HCMC
