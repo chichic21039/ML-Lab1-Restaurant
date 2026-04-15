@@ -1,7 +1,14 @@
+This is the updated **README.md** in English. I have added a dedicated section for **Large Files** and updated the **Project Structure** to clearly state that the `dataset/` and `food-recommend-sys/` folders must be downloaded via the Google Drive link provided.
+
+---
+
 # Lab 01: Machine Learning Applications for Promoting Vietnam Tourism
 ## Project: Restaurant Sentiment Analysis & Recommendation System in District 5, HCMC
 
-This project aims to enhance the tourism experience in District 5, Ho Chi Minh City, by providing a sentiment-based restaurant recommendation system. Instead of relying solely on subjective star ratings, we utilize Machine Learning to analyze actual customer review content to provide more reliable insights for tourists.
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/chichic21039/ML-Lab1-Restaurant)
+[![Google Drive](https://img.shields.io/badge/Google%20Drive-Large%20Files-orange?logo=googledrive)](https://drive.google.com/drive/folders/1XnFV6FiIKa-IPg5H29sR0nA3oFXXQ1ey?usp=sharing)
+
+This project aims to enhance the tourism experience in District 5, Ho Chi Minh City, by providing a sentiment-based restaurant recommendation system. Instead of relying solely on subjective star ratings, we utilize Machine Learning to analyze actual customer review content, providing more reliable and nuanced insights for tourists.
 
 ---
 
@@ -22,91 +29,88 @@ This project aims to enhance the tourism experience in District 5, Ho Chi Minh C
 
 ---
 
-## 2. Project Structure
+## 2. Important: Large Files & Assets
 
-The repository is organized to follow the standard Machine Learning pipeline:
+Due to GitHub's file size limits, the core datasets and the web application source code are hosted on Google Drive. **Please download these folders to run the project locally:**
+
+👉 **[Download Dataset & Web App (Google Drive)](https://drive.google.com/drive/folders/1XnFV6FiIKa-IPg5H29sR0nA3oFXXQ1ey?usp=sharing)**
+
+*   **`dataset/`**: Contains raw and processed JSON/CSV files.
+*   **`food-recommend-sys/`**: Contains the full-stack source code (Next.js & Express).
+
+---
+
+## 3. Project Structure
+
+The repository is organized into specific modules. Note that folders marked with `(Drive)` are found in the link above:
 
 ```text
-├── crawl_metadata/            # Scrapers for restaurant info (name, address, avg rating...)
-├── crawl_review/              # Scrapers for customer reviews from Google Maps
-├── dataset/                   # Training and real-world datasets (.csv, .json)
+├── dataset/ (Drive)           # Raw and processed datasets (too large for GitHub)
+├── food-recommend-sys/ (Drive)# Full-stack Web Application source code
+├── crawl_metadata/            # Selenium scripts for scraping restaurant info
+├── crawl_review/              # Selenium scripts for scraping Google Maps reviews
 ├── preprocessing and eda/      # Data cleaning and Exploratory Data Analysis notebooks
-├── model/                     # Implementation of SVM, BiGRU, and PhoBERT
-├── evaluation/                # Performance metrics and Confusion Matrix visualization
-├── food-recommend-sys/        # Full-stack Web Application (Next.js, Express, MongoDB)
-├── label/                     # Sentiment label definitions (Positive, Negative, Neutral)
+├── model/                     # Training scripts for SVM, BiGRU, and PhoBERT
+├── evaluation/                # Performance evaluation and confusion matrices
+├── label/                     # Sentiment label definitions and mapping
 ├── requirements.txt           # Python dependencies (transformers, torch, pyvi, etc.)
-├── package.json               # Node.js dependencies for the Web App
 └── README.md                  # Project documentation
 ```
 
 ---
 
-## 3. Data & Preprocessing
+## 4. Data & Preprocessing
 
 ### Data Sources
-*   **Training Dataset:** ~32.7k Vietnamese restaurant reviews (compiled from Hugging Face and Kaggle).
-*   **Real-world Data:** Web-scraped data from Google Maps for restaurants specifically in **District 5**, resulting in **349 restaurants** and **8,369 reviews**.
+*   **Training Dataset:** ~32.7k Vietnamese reviews (Hugging Face & Kaggle).
+*   **Real-world Data:** Web-scraped data from Google Maps for District 5 restaurants: **349 restaurants** and **8,369 reviews**.
 
 ### Preprocessing Pipeline
-To ensure high performance in Vietnamese NLP, we implemented the following steps:
-*   **Text Cleaning:** Unicode normalization, fixing Mojibake errors, and removing hidden characters.
-*   **Standardization:** Correcting Vietnamese "teencode" and abbreviations (e.g., `ko` → `không`).
-*   **Emoji Mapping:** Mapping expressive icons to descriptive Vietnamese tokens to capture visual sentiment.
-*   **Word Segmentation:** Utilizing the `pyvi` library to handle Vietnamese compound words.
-*   **Length Filtering:** Truncating reviews to a maximum of 256 tokens for computational efficiency.
+*   **Text Cleaning:** Unicode normalization and fixing Mojibake encoding errors.
+*   **Standardization:** Correcting Vietnamese "teencode" (e.g., `ko` → `không`).
+*   **Emoji Mapping:** Translating icons into descriptive Vietnamese words.
+*   **Word Segmentation:** Using the `pyvi` library to handle Vietnamese compound words.
+*   **Length Filtering:** Truncating reviews to a maximum of 256 tokens for model efficiency.
 
 ---
 
-## 4. Model Implementation
+## 5. Model Implementation
 
-We compared three distinct architectures representing the evolution of NLP:
+We compared three distinct architectures:
 
-1.  **SVM (Traditional ML):** Our baseline model using **TF-IDF** vectorization.
-2.  **BiGRU (Deep Learning - RNN):** Uses **FastText** Vietnamese word embeddings to capture sequential dependencies.
-3.  **PhoBERT (Transformer-based):** A State-of-the-Art (SOTA) model pre-trained on large-scale Vietnamese corpora, fine-tuned for this specific task.
+1.  **SVM (Traditional ML):** Baseline model using **TF-IDF** vectorization.
+2.  **BiGRU (Deep Learning):** Uses **FastText** embeddings to capture sequential context.
+3.  **PhoBERT (Transformer):** SOTA model pre-trained on Vietnamese, fine-tuned for restaurant sentiment.
 
-### Training Strategy
-*   **Data Split:** 80:10:10 (Train:Validation:Test) using **Stratified Sampling**.
-*   **Class Imbalance:** Handled using **Class Weights** to penalize errors in minority classes (Negative and Neutral).
-*   **Optimization:** AdamW optimizer, Early Stopping, and Step-wise evaluation.
+### Results Comparison
 
----
-
-## 5. Evaluation & Results
-
-| Model | Accuracy | Macro F1 | Latency (ms/sample) | Disk Size |
-| :--- | :---: | :---: | :---: | :---: |
-| **SVM** | 0.826 | 0.801 | 17.989 | **11.2 MB** |
-| **BiGRU** | 0.834 | 0.803 | **2.049** | 52.8 MB |
-| **PhoBERT** | **0.885** | **0.863** | 10.456 | 516.9 MB |
-
-**Key Findings:**
-*   **PhoBERT Superiority:** Significantly outperforms others in accuracy, especially for the difficult "Neutral" class.
-*   **Inference Efficiency:** **BiGRU** is the most efficient for real-time applications with the lowest latency.
-*   **Robustness:** PhoBERT maintains high accuracy (~85%) even on long-form reviews compared to SVM.
+| Model | Accuracy | Macro F1 | Latency (ms/sample) |
+| :--- | :---: | :---: | :---: |
+| **SVM** | 0.826 | 0.801 | 17.989 |
+| **BiGRU** | 0.834 | 0.803 | **2.049** |
+| **PhoBERT** | **0.885** | **0.863** | 10.456 |
 
 ---
 
 ## 6. Application Development
 
-The final product is a full-stack web application designed for tourists:
-*   **Tech Stack:** Next.js (Frontend), Express.js (Backend), MongoDB Atlas (Database).
-*   **Features:**
-    *   Advanced filtering (Category, price range, opening hours).
-    *   **Sentiment Visualization:** Summary charts of customer opinions (Positive vs. Negative vs. Neutral).
-    *   Model-assisted ranking to prioritize high-quality dining experiences.
+The project is deployed as a full-stack solution:
+*   **Stack:** Next.js (Frontend), Express.js (Backend), MongoDB Atlas (Database).
+*   **Key Features:** 
+    *   Search and filter restaurants by category, price, and LGBTQ+ friendliness.
+    *   **Sentiment Dashboard:** Visual summaries (Charts) of customer sentiment for every restaurant.
+    *   Offline inference pipeline to sync model predictions with the database.
 
 ---
 
 ## 7. Conclusions & Future Work
 
-**Conclusion:** The project successfully demonstrates a complete pipeline for Vietnamese restaurant sentiment analysis. Transformer-based models (PhoBERT) provide the best generalization for complex linguistic nuances like sarcasm in culinary reviews.
+**Conclusion:** The project successfully demonstrates an end-to-end pipeline for Vietnamese sentiment analysis in tourism. PhoBERT is established as the superior model for quality, while BiGRU is optimal for efficiency.
 
-**Future Research:**
-*   **Scalability:** Expanding the geographical scope to all districts in Ho Chi Minh City.
-*   **Optimization:** Applying Model Quantization and Distillation to deploy on mobile devices.
-*   **Multimodal Learning:** Integrating visual features from food images alongside textual reviews for richer insights.
+**Future Directions:**
+*   Scale data collection to cover all districts in Ho Chi Minh City.
+*   Optimize PhoBERT via **Quantization** for mobile deployment.
+*   Integrate **Multimodal Learning** (analyzing food images alongside text).
 
 ---
-*Developed for academic purposes at HCMUS.*
+*Created for the Lab 01 assignment at HCMUS - April 2026.*
